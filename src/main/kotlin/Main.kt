@@ -1,5 +1,7 @@
 package com.example
 
+import com.example.impl.DConnectionMaker
+
 /**
  * DB_CLOSE_DELAY=-1 : JVM이 살아있는 동안 메모리 DB 내용을 유지합니다.
  */
@@ -23,7 +25,7 @@ fun prepareDatabase() {
 
 fun main() {
     prepareDatabase()
-    val dao = UserDao(SimpleConnectionMaker())
+    val dao = UserDao(DConnectionMaker())
 
     val user = User("1", "John Doe", "password123")
     dao.add(user)

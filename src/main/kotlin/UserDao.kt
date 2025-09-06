@@ -12,7 +12,7 @@ import java.sql.*
  */
 
 class UserDao(
-    private val connectionMaker: SimpleConnectionMaker,
+    private val connectionMaker: ConnectionMaker,
 ) {
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun add(user: User) {
