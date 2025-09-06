@@ -23,7 +23,7 @@ fun prepareDatabase() {
 
 fun main() {
     prepareDatabase()
-    val dao = UserDao()
+    val dao = UserDao(SimpleConnectionMaker())
 
     val user = User("1", "John Doe", "password123")
     dao.add(user)

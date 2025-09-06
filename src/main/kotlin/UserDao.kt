@@ -11,10 +11,12 @@ import java.sql.*
  * 6. JDBC API가 만들어내는 예외를 잡아서 직접 처리하거나, 메소드에 throws를 선언해서 예외가 발생하면 메소드 밖으로 던지게 한다.
  */
 
-abstract class UserDao {
+class UserDao(
+    private val connectionMaker: SimpleConnectionMaker,
+) {
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun add(user: User) {
-        val connection = getConnection()
+        val connection = connectionMaker.makeNewConnection()
         val ps = connection.prepareStatement("INSERT INTO users(id, name, password) VALUES(?, ?, ?)")
         ps.setString(1, user.id)
         ps.setString(2, user.name)
@@ -26,7 +28,7 @@ abstract class UserDao {
 
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun get(id: String): User {
-        val connection = getConnection()
+        val connection = connectionMaker.makeNewConnection()
         val ps = connection.prepareStatement("SELECT * FROM users WHERE id = ?")
         ps.setString(1, id)
 
@@ -44,7 +46,4 @@ abstract class UserDao {
 
         return user
     }
-
-    @Throws(SQLException::class, ClassNotFoundException::class)
-    abstract fun getConnection(): Connection
 }
