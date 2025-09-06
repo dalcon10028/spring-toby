@@ -11,7 +11,7 @@ import java.sql.*
  * 6. JDBC API가 만들어내는 예외를 잡아서 직접 처리하거나, 메소드에 throws를 선언해서 예외가 발생하면 메소드 밖으로 던지게 한다.
  */
 
-class UserDao {
+abstract class UserDao {
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun add(user: User) {
         val connection = getConnection()
@@ -46,8 +46,5 @@ class UserDao {
     }
 
     @Throws(SQLException::class, ClassNotFoundException::class)
-    private fun getConnection(): Connection {
-        Class.forName("org.h2.Driver")
-        return DriverManager.getConnection("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1", "sa", "")
-    }
+    abstract fun getConnection(): Connection
 }
