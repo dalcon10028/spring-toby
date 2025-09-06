@@ -1,6 +1,6 @@
 package com.example
 
-import java.sql.SQLException
+import java.sql.*
 
 /**
  * 1. DB 연결을 위한 Connection을 가져온다.
@@ -14,8 +14,7 @@ import java.sql.SQLException
 class UserDao {
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun add(user: User) {
-        Class.forName("org.h2.Driver")
-        val connection = java.sql.DriverManager.getConnection("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1", "sa", "")
+        val connection = getConnection()
         val ps = connection.prepareStatement("INSERT INTO users(id, name, password) VALUES(?, ?, ?)")
         ps.setString(1, user.id)
         ps.setString(2, user.name)
@@ -27,8 +26,7 @@ class UserDao {
 
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun get(id: String): User {
-        Class.forName("org.h2.Driver")
-        val connection = java.sql.DriverManager.getConnection("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1", "sa", "")
+        val connection = getConnection()
         val ps = connection.prepareStatement("SELECT * FROM users WHERE id = ?")
         ps.setString(1, id)
 
@@ -45,5 +43,11 @@ class UserDao {
         connection.close()
 
         return user
+    }
+
+    @Throws(SQLException::class, ClassNotFoundException::class)
+    private fun getConnection(): Connection {
+        Class.forName("org.h2.Driver")
+        return DriverManager.getConnection("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1", "sa", "")
     }
 }
