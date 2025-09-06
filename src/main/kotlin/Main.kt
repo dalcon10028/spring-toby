@@ -1,5 +1,8 @@
 package com.example
 
+import com.example.dao.UserDao
+import org.springframework.context.annotation.AnnotationConfigApplicationContext
+
 /**
  * DB_CLOSE_DELAY=-1 : JVM이 살아있는 동안 메모리 DB 내용을 유지합니다.
  */
@@ -23,7 +26,8 @@ fun prepareDatabase() {
 
 fun main() {
     prepareDatabase()
-    val dao = DaoFactory().userDao()
+    val context = AnnotationConfigApplicationContext(DaoFactory::class.java)
+    val dao = context.getBean("userDao", UserDao::class.java)
 
     val user = User("1", "John Doe", "password123")
     dao.add(user)

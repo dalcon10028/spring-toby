@@ -4,13 +4,21 @@ import com.example.dao.AccountDao
 import com.example.dao.MessageDao
 import com.example.dao.UserDao
 import com.example.impl.DConnectionMaker
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
-class DaoFactory {
-    fun userDao(): UserDao = UserDao(connectionMaker())
+@Configuration
+open class DaoFactory {
 
-    fun accountDao(): AccountDao = AccountDao(connectionMaker())
+    @Bean
+    open fun userDao(): UserDao = UserDao(connectionMaker())
 
-    fun messageDao(): MessageDao = MessageDao(connectionMaker())
+    @Bean
+    open fun accountDao(): AccountDao = AccountDao(connectionMaker())
 
-    fun connectionMaker(): ConnectionMaker = DConnectionMaker()
+    @Bean
+    open fun messageDao(): MessageDao = MessageDao(connectionMaker())
+
+    @Bean
+    open fun connectionMaker(): ConnectionMaker = DConnectionMaker()
 }
