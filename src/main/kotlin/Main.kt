@@ -1,17 +1,35 @@
 package com.example
 
+/**
+ * DB_CLOSE_DELAY=-1 : JVM이 살아있는 동안 메모리 DB 내용을 유지합니다.
+ */
+fun prepareDatabase() {
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+    Class.forName("org.h2.Driver")
+    val connection = java.sql.DriverManager.getConnection("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1", "sa", "")
+    val statement = connection.createStatement()
+    statement.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+            id VARCHAR(50) PRIMARY KEY,
+            name VARCHAR(100),
+            password VARCHAR(100)
+        )
+        """.trimIndent()
+    )
+    statement.close()
+    connection.close()
+}
+
 fun main() {
-    val name = "Kotlin"
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    println("Hello, " + name + "!")
+    prepareDatabase()
+    val dao = UserDao()
 
-    for (i in 1..5) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        println("i = $i")
-    }
+    val user = User("1", "John Doe", "password123")
+    dao.add(user)
+
+    println("User added: $user")
+
+    val user2 = dao.get(user.id)
+    println("User retrieved: $user2")
 }
