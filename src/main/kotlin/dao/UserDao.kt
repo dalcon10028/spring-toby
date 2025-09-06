@@ -1,6 +1,8 @@
-package com.example
+package com.example.dao
 
-import java.sql.*
+import com.example.ConnectionMaker
+import com.example.User
+import java.sql.SQLException
 
 /**
  * 1. DB 연결을 위한 Connection을 가져온다.
