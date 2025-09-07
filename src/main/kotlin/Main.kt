@@ -1,15 +1,14 @@
 package com.example
 
 import com.example.dao.UserDao
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 /**
  * DB_CLOSE_DELAY=-1 : JVM이 살아있는 동안 메모리 DB 내용을 유지합니다.
  */
-fun prepareDatabase() {
-
-    Class.forName("org.h2.Driver")
-    val connection = java.sql.DriverManager.getConnection("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1", "sa", "")
+fun prepareDatabase(context: ApplicationContext) {
+    val connection = context.getBean(DataSourceConfig::class.java).dataSource().connection
     val statement = connection.createStatement()
     statement.execute(
         """
@@ -25,8 +24,8 @@ fun prepareDatabase() {
 }
 
 fun main() {
-    prepareDatabase()
-    val context = AnnotationConfigApplicationContext(DaoFactory::class.java)
+    val context = AnnotationConfigApplicationContext(DataSourceConfig::class.java, DaoFactory::class.java)
+    prepareDatabase(context)
     val dao = context.getBean("userDao", UserDao::class.java)
 
     val user = User("1", "John Doe", "password123")

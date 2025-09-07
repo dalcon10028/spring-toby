@@ -1,5 +1,5 @@
 package com.example.dao
 
-import com.example.ConnectionMaker
+import javax.sql.DataSource
 
-class MessageDao(private val connectionMaker: ConnectionMaker)
+class MessageDao(private val dataSource: DataSource)

@@ -1,8 +1,8 @@
 package com.example.dao
 
-import com.example.ConnectionMaker
 import com.example.User
 import java.sql.SQLException
+import javax.sql.DataSource
 
 /**
  * 1. DB 연결을 위한 Connection을 가져온다.
@@ -14,11 +14,11 @@ import java.sql.SQLException
  */
 
 class UserDao(
-    private val connectionMaker: ConnectionMaker,
+    private val dataSource: DataSource,
 ) {
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun add(user: User) {
-        val connection = connectionMaker.makeNewConnection()
+        val connection = dataSource.connection
         val ps = connection.prepareStatement("INSERT INTO users(id, name, password) VALUES(?, ?, ?)")
         ps.setString(1, user.id)
         ps.setString(2, user.name)
@@ -30,8 +30,8 @@ class UserDao(
 
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun get(id: String): User {
-        val connection = connectionMaker.makeNewConnection()
-        val ps = connection.prepareStatement("SELECT * FROM users WHERE id = ?")
+        val connection = dataSource.connection
+        val ps = dataSource.connection.prepareStatement("SELECT * FROM users WHERE id = ?")
         ps.setString(1, id)
 
         val rs = ps.executeQuery()
