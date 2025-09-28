@@ -1,4 +1,4 @@
-package com.example.dao
+package com.example.dao.account
 
 import javax.sql.DataSource
 

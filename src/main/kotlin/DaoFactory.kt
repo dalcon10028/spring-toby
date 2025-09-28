@@ -1,7 +1,7 @@
 package com.example
 
-import com.example.dao.AccountDao
-import com.example.dao.MessageDao
+import com.example.dao.account.AccountDao
+import com.example.dao.message.MessageDao
 import com.example.dao.user.UserDao
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
