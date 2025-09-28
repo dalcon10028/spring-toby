@@ -53,7 +53,7 @@ class UserDao(
 
     @Throws(SQLException::class)
     fun deleteAll() {
-        jdbcContext.workWithStatement(DeleteAllStatement())
+        executeSql("DELETE FROM users")
     }
 
 
@@ -83,5 +83,13 @@ class UserDao(
             } catch (e: SQLException) {
             }
         }
+    }
+
+    private fun executeSql(query: String) {
+        jdbcContext.workWithStatement(object : StatementStrategy {
+            override fun makePreparedStatement(connection: Connection): PreparedStatement {
+                return connection.prepareStatement(query)
+            }
+        })
     }
 }
