@@ -28,4 +28,12 @@ class JdbcContext(
             }
         }
     }
+
+    fun executeSql(sql: String) {
+        workWithStatement(object : StatementStrategy {
+            override fun makePreparedStatement(connection: Connection): PreparedStatement {
+                return connection.prepareStatement(sql)
+            }
+        })
+    }
 }
