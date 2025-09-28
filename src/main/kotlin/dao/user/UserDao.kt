@@ -20,16 +20,68 @@ import javax.sql.DataSource
  * 6. JDBC API가 만들어내는 예외를 잡아서 직접 처리하거나, 메소드에 throws를 선언해서 예외가 발생하면 메소드 밖으로 던지게 한다.
  */
 
-class UserDao {
-    lateinit var jdbcContext: JdbcContext
+class UserDao(
+    private val dataSource: DataSource
+) {
+    private val jdbcContext: JdbcContext = JdbcContext(dataSource)
 
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun add(user: User) {
         jdbcContext.workWithStatement(AddStatement(user))
     }
 
+    @Throws(SQLException::class, ClassNotFoundException::class)
+    fun get(id: String): User {
+        val connection = dataSource.connection
+        val ps = dataSource.connection.prepareStatement("SELECT * FROM users WHERE id = ?")
+        ps.setString(1, id)
+
+        val rs = ps.executeQuery()
+        rs.next()
+        val user = User(
+            rs.getString("id"),
+            rs.getString("name"),
+            rs.getString("password")
+        )
+
+        rs.close()
+        ps.close()
+        connection.close()
+
+        return user
+    }
+
     @Throws(SQLException::class)
     fun deleteAll() {
         jdbcContext.workWithStatement(DeleteAllStatement())
+    }
+
+
+    @Throws(SQLException::class, ClassNotFoundException::class)
+    fun getCount(): Int {
+        val connection = dataSource.connection
+        var ps: PreparedStatement? = null
+        var rs: ResultSet? = null
+        try {
+            ps = connection.prepareStatement("SELECT COUNT(*) FROM users")
+            rs = ps.executeQuery()
+            rs.next()
+            return rs.getInt(1)
+        } catch (e: SQLException) {
+            throw e
+        } finally {
+            try {
+                rs?.close()
+            } catch (e: SQLException) {
+            }
+            try {
+                ps?.close() // 여기서도 예외가 발생할 수 있다. 잡아주지 않으면 Connection close가 실행되지 않는다.
+            } catch (e: SQLException) {
+            }
+            try {
+                connection.close()
+            } catch (e: SQLException) {
+            }
+        }
     }
 }

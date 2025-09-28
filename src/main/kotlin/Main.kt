@@ -32,4 +32,7 @@ fun main() {
     dao.add(user)
 
     println("User added: $user")
+
+    val user2 = dao.get(user.id)
+    println("User retrieved: $user2")
 }

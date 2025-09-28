@@ -4,9 +4,9 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import javax.sql.DataSource
 
-class JdbcContext {
-    lateinit var dataSource: DataSource
-
+class JdbcContext(
+    val dataSource: DataSource
+) {
     fun workWithStatement(statementStrategy: StatementStrategy) {
         var connection: Connection? = null
         var ps: PreparedStatement? = null
