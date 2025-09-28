@@ -1,6 +1,9 @@
 package com.example.dao
 
 import com.example.User
+import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import java.sql.SQLException
 import javax.sql.DataSource
 
@@ -47,5 +50,27 @@ class UserDao(
         connection.close()
 
         return user
+    }
+
+    @Throws(SQLException::class, ClassNotFoundException::class)
+    fun deleteAll() {
+        var connection: Connection? = null
+        var ps: PreparedStatement? = null
+        try {
+            connection = dataSource.connection
+            ps = connection.prepareStatement("DELETE FROM users")
+            ps.executeUpdate()
+        } catch (e: SQLException) {
+            throw e
+        } finally {
+            try {
+                ps?.close() // 여기서도 예외가 발생할 수 있다. 잡아주지 않으면 Connection close가 실행되지 않는다.
+            } catch (e: SQLException) {
+            }
+            try {
+                connection?.close()
+            } catch (e: SQLException) {
+            }
+        }
     }
 }
