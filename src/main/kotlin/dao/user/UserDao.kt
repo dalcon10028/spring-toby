@@ -5,6 +5,8 @@ import com.example.dao.JdbcContext
 import com.example.dao.StatementStrategy
 import com.example.dao.user.statement.DeleteAllStatement
 import com.example.dao.user.statement.dao.user.statement.AddStatement
+import org.springframework.dao.EmptyResultDataAccessException
+import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -23,65 +25,52 @@ import javax.sql.DataSource
 class UserDao(
     private val dataSource: DataSource
 ) {
-    private val jdbcContext: JdbcContext = JdbcContext(dataSource)
+    private val jdbcTemplate: JdbcTemplate = JdbcTemplate(dataSource)
 
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun add(user: User) {
-        jdbcContext.workWithStatement(AddStatement(user))
+        jdbcTemplate.update(
+            "INSERT INTO users(id, name, password) VALUES(?, ?, ?)",
+            user.id, user.name, user.password
+        )
     }
 
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun get(id: String): User {
-        val connection = dataSource.connection
-        val ps = dataSource.connection.prepareStatement("SELECT * FROM users WHERE id = ?")
-        ps.setString(1, id)
-
-        val rs = ps.executeQuery()
-        rs.next()
-        val user = User(
-            rs.getString("id"),
-            rs.getString("name"),
-            rs.getString("password")
-        )
-
-        rs.close()
-        ps.close()
-        connection.close()
-
-        return user
+        return jdbcTemplate.queryForObject(
+            "SELECT * FROM users WHERE id = ?",
+            { rs: ResultSet, _: Int ->
+                User(
+                    rs.getString("id"),
+                    rs.getString("name"),
+                    rs.getString("password")
+                )
+            },
+            id
+        ) ?: throw EmptyResultDataAccessException(1)
     }
 
     @Throws(SQLException::class)
     fun deleteAll() {
-        jdbcContext.executeSql("DELETE FROM users")
+        jdbcTemplate.update("DELETE FROM users")
     }
 
 
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun getCount(): Int {
-        val connection = dataSource.connection
-        var ps: PreparedStatement? = null
-        var rs: ResultSet? = null
-        try {
-            ps = connection.prepareStatement("SELECT COUNT(*) FROM users")
-            rs = ps.executeQuery()
-            rs.next()
-            return rs.getInt(1)
-        } catch (e: SQLException) {
-            throw e
-        } finally {
-            try {
-                rs?.close()
-            } catch (e: SQLException) {
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users", Int::class.java) ?: 0
+    }
+
+    fun getAll(): List<User> {
+        return jdbcTemplate.query(
+            "SELECT * FROM users ORDER BY id",
+            { rs: ResultSet, _: Int ->
+                User(
+                    rs.getString("id"),
+                    rs.getString("name"),
+                    rs.getString("password")
+                )
             }
-            try {
-                ps?.close() // 여기서도 예외가 발생할 수 있다. 잡아주지 않으면 Connection close가 실행되지 않는다.
-            } catch (e: SQLException) {
-            }
-            try {
-                connection.close()
-            } catch (e: SQLException) {
-            }
-        }
+        )
     }
 }
