@@ -73,4 +73,32 @@ class UserDao(
             }
         }
     }
+
+    @Throws(SQLException::class, ClassNotFoundException::class)
+    fun getCount(): Int {
+        val connection = dataSource.connection
+        var ps: PreparedStatement? = null
+        var rs: ResultSet? = null
+        try {
+            ps = connection.prepareStatement("SELECT COUNT(*) FROM users")
+            rs = ps.executeQuery()
+            rs.next()
+            return rs.getInt(1)
+        } catch (e: SQLException) {
+            throw e
+        } finally {
+            try {
+                rs?.close()
+            } catch (e: SQLException) {
+            }
+            try {
+                ps?.close() // 여기서도 예외가 발생할 수 있다. 잡아주지 않으면 Connection close가 실행되지 않는다.
+            } catch (e: SQLException) {
+            }
+            try {
+                connection.close()
+            } catch (e: SQLException) {
+            }
+        }
+    }
 }
