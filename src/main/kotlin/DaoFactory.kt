@@ -2,7 +2,7 @@ package com.example
 
 import com.example.dao.AccountDao
 import com.example.dao.MessageDao
-import com.example.dao.UserDao
+import com.example.dao.user.UserDao
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import javax.sql.DataSource
