@@ -1,6 +1,9 @@
 package com.example.dao.user
 
 import com.example.User
+import com.example.dao.StatementStrategy
+import com.example.dao.user.statement.DeleteAllStatement
+import com.example.dao.user.statement.dao.user.statement.AddStatement
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -21,14 +24,7 @@ class UserDao(
 ) {
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun add(user: User) {
-        val connection = dataSource.connection
-        val ps = connection.prepareStatement("INSERT INTO users(id, name, password) VALUES(?, ?, ?)")
-        ps.setString(1, user.id)
-        ps.setString(2, user.name)
-        ps.setString(3, user.password)
-        ps.executeUpdate()
-        ps.close()
-        connection.close()
+        jdbcContextWithStatement(AddStatement(user))
     }
 
     @Throws(SQLException::class, ClassNotFoundException::class)
@@ -52,27 +48,11 @@ class UserDao(
         return user
     }
 
-    @Throws(SQLException::class, ClassNotFoundException::class)
+    @Throws(SQLException::class)
     fun deleteAll() {
-        var connection: Connection? = null
-        var ps: PreparedStatement? = null
-        try {
-            connection = dataSource.connection
-            ps = connection.prepareStatement("DELETE FROM users")
-            ps.executeUpdate()
-        } catch (e: SQLException) {
-            throw e
-        } finally {
-            try {
-                ps?.close() // 여기서도 예외가 발생할 수 있다. 잡아주지 않으면 Connection close가 실행되지 않는다.
-            } catch (e: SQLException) {
-            }
-            try {
-                connection?.close()
-            } catch (e: SQLException) {
-            }
-        }
+        jdbcContextWithStatement(DeleteAllStatement())
     }
+
 
     @Throws(SQLException::class, ClassNotFoundException::class)
     fun getCount(): Int {
@@ -98,6 +78,25 @@ class UserDao(
             try {
                 connection.close()
             } catch (e: SQLException) {
+            }
+        }
+    }
+
+    @Throws(SQLException::class)
+    private fun jdbcContextWithStatement(stmt: StatementStrategy) {
+        var connection: Connection? = null
+        var ps: PreparedStatement? = null
+        try {
+            connection = dataSource.connection
+            ps = stmt.makePreparedStatement(connection)
+            ps.executeUpdate()
+        } catch (e: SQLException) {
+            throw e
+        } finally {
+            try {
+                ps?.close()
+            } catch (e: SQLException) {
+                throw e
             }
         }
     }
