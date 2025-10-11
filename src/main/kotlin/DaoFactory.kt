@@ -3,6 +3,7 @@ package com.example
 import com.example.dao.account.AccountDao
 import com.example.dao.message.MessageDao
 import com.example.dao.user.UserDao
+import com.example.dao.user.impl.UserDaoJdbc
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import javax.sql.DataSource
@@ -13,7 +14,7 @@ open class DaoFactory(
 ) {
 
     @Bean
-    open fun userDao(): UserDao = UserDao(dataSource)
+    open fun userDao(): UserDao = UserDaoJdbc(dataSource)
 
     @Bean
     open fun accountDao(): AccountDao = AccountDao(dataSource)
