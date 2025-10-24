@@ -13,6 +13,7 @@ dependencies {
     val springVersion = "6.2.10"
     val kotestVersion = "6.0.0"
     val mockkVersion = "1.14.6"
+    val springmockkVersion = "4.0.2"
 
     implementation("org.springframework:spring-context:$springVersion")
     implementation("org.springframework:spring-jdbc:$springVersion")
@@ -25,6 +26,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.kotest:kotest-extensions-spring:$kotestVersion")
     testImplementation("io.mockk:mockk:${mockkVersion}")
+    testImplementation("com.ninja-squad:springmockk:${springmockkVersion}")
 }
 
 tasks.test {
