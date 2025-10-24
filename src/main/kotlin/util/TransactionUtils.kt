@@ -1,30 +1,29 @@
 package com.example.util
 
-import org.springframework.jdbc.datasource.DataSourceUtils
-import org.springframework.transaction.support.TransactionSynchronizationManager
-import javax.sql.DataSource
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
+import org.springframework.transaction.support.DefaultTransactionDefinition
 
 object TransactionUtils {
 
-    inline fun <T> DataSource.transaction(block: () -> T): T {
-        val connection = DataSourceUtils.getConnection(this)
-        val previousAutoCommit = connection.autoCommit
+    inline fun <T> PlatformTransactionManager.transaction(
+        isolationLevel: Int = TransactionDefinition.ISOLATION_DEFAULT,
+        propagationBehavior: Int = TransactionDefinition.PROPAGATION_REQUIRED,
+        block: () -> T
+    ): T {
+        val transactionDefinition = DefaultTransactionDefinition().apply {
+            this.isolationLevel = isolationLevel
+            this.propagationBehavior = propagationBehavior
+        }
+        val transactionStatus = getTransaction(transactionDefinition)
 
         return try {
-            connection.autoCommit = false
-            TransactionSynchronizationManager.bindResource(this, connection)
-
             val result = block()
-
-            connection.commit()
+            commit(transactionStatus)
             result
         } catch (e: Exception) {
-            connection.rollback()
+            rollback(transactionStatus)
             throw e
-        } finally {
-            TransactionSynchronizationManager.unbindResource(this)
-            connection.autoCommit = previousAutoCommit
-            DataSourceUtils.releaseConnection(connection, this)
         }
     }
 }

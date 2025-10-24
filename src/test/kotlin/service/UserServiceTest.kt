@@ -4,18 +4,17 @@ import com.example.dao.user.UserDao
 import com.example.model.User
 import com.example.model.UserLevel
 import com.example.service.UserService
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import javax.sql.DataSource
+import org.springframework.transaction.PlatformTransactionManager
 
 class UserServiceTest : FunSpec({
     val userDao = mockk<UserDao>()
-    val dataSource = mockk<DataSource>(relaxed = true)
-    val userService = UserService(userDao, dataSource)
+    val transactionManager = mockk<PlatformTransactionManager>(relaxed = true)
+    val userService = UserService(userDao, transactionManager)
 
     beforeEach { clearAllMocks() }
 

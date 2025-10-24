@@ -16,7 +16,10 @@ fun prepareDatabase(context: ApplicationContext) {
         CREATE TABLE IF NOT EXISTS users (
             id VARCHAR(50) PRIMARY KEY,
             name VARCHAR(100),
-            password VARCHAR(100)
+            password VARCHAR(100),
+            level INT,
+            login INT,
+            recommend INT
         )
         """.trimIndent()
     )
