@@ -1,6 +1,7 @@
 package com.example.service
 
 import com.example.dao.user.UserDao
+import com.example.model.User
 import com.example.model.UserLevel.*
 import org.springframework.stereotype.Service
 
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Service
 class UserService(
     private val userDao: UserDao
 ) {
+    fun add(user: User) = userDao.add(user)
+
     fun upgradeLevels() {
         userDao.getAll()
             .filterNot { user -> user.level == GOLD } // Exclude GOLD level users

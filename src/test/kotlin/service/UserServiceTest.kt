@@ -4,22 +4,18 @@ import com.example.dao.user.UserDao
 import com.example.model.User
 import com.example.model.UserLevel
 import com.example.service.UserService
-import com.ninjasquad.springmockk.MockkBean
-import io.kotest.core.extensions.ApplyExtension
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.extensions.spring.SpringExtension
-import io.kotest.matchers.shouldBe
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.springframework.test.context.ContextConfiguration
 
-@ContextConfiguration(classes = [UserService::class])
-@ApplyExtension(SpringExtension::class)
-class UserServiceTest(
-    private val userService: UserService,
-    @MockkBean private val userDao: UserDao,
-) : FunSpec({
+class UserServiceTest: FunSpec({
+    val userDao = mockk<UserDao>()
+    val userService = UserService(userDao)
+
+    beforeEach { clearAllMocks() }
+
     context("upgradeLevels") {
         test("should upgrade BASIC user to SILVER when login >= 50") {
             // given
@@ -105,6 +101,27 @@ class UserServiceTest(
 
             // then
             verify(exactly = 0) { userDao.update(any()) }
+        }
+    }
+
+    context("add") {
+        test("should add user through userDao") {
+            // given
+            val newUser = User(
+                id = "newUser",
+                name = "New User",
+                password = "password",
+                level = UserLevel.BASIC,
+                login = 0,
+                recommend = 0
+            )
+            every { userDao.add(newUser) } returns Unit
+
+            // when
+            userService.add(newUser)
+
+            // then
+            verify(exactly = 1) { userDao.add(newUser) }
         }
     }
 })
