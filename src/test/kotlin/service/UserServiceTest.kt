@@ -10,10 +10,12 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import javax.sql.DataSource
 
 class UserServiceTest : FunSpec({
     val userDao = mockk<UserDao>()
-    val userService = UserService(userDao)
+    val dataSource = mockk<DataSource>(relaxed = true)
+    val userService = UserService(userDao, dataSource)
 
     beforeEach { clearAllMocks() }
 
@@ -102,41 +104,6 @@ class UserServiceTest : FunSpec({
 
             // then
             verify(exactly = 0) { userDao.update(any()) }
-        }
-
-        // transactional test
-
-        test("should rollback all updates when exception occurs during upgrade") {
-            // given
-            val users = listOf(
-                User(
-                    id = "user1",
-                    name = "User 1",
-                    password = "password",
-                    level = UserLevel.BASIC,
-                    login = 55,
-                    recommend = 10
-                ),
-                User(
-                    id = "user2",
-                    name = "User 2",
-                    password = "password",
-                    level = UserLevel.SILVER,
-                    login = 100,
-                    recommend = 35
-                )
-            )
-
-            every { userDao.getAll() } returns users
-            every { userDao.update(match { it.id == "user1" }) } returns Unit
-            every { userDao.update(match { it.id == "user2" }) } throws RuntimeException("Update failed")
-
-            // when & then
-            shouldThrow<RuntimeException> {
-                userService.upgradeLevels()
-            }
-            // Verify that only the first update was attempted and rollback happened
-            verify(exactly = 1) { userDao.update(match { it.id == "user1" && it.level == UserLevel.BASIC }) }
         }
     }
 

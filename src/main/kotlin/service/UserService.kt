@@ -3,15 +3,18 @@ package com.example.service
 import com.example.dao.user.UserDao
 import com.example.model.User
 import com.example.model.UserLevel.*
+import com.example.util.TransactionUtils.transaction
 import org.springframework.stereotype.Service
+import javax.sql.DataSource
 
 @Service
 class UserService(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val dataSource: DataSource
 ) {
     fun add(user: User) = userDao.add(user)
 
-    fun upgradeLevels() {
+    fun upgradeLevels() = dataSource.transaction {
         userDao.getAll()
             .filterNot { user -> user.level == GOLD } // Exclude GOLD level users
             .filter { user ->
