@@ -46,6 +46,22 @@ class UserDaoTest : FunSpec({
         verify(exactly = 1) { userDao.add(user) }
     }
 
+    test("update") {
+        // given
+        val user = User(id = "testId", name = "testName", password = "testPassword")
+        every { userDao.update(user) } returns Unit
+        every { userDao.get("testId") } returns user.copy(name = "updatedName", password = "updatedPassword")
+
+        // when
+        userDao.update(user.copy(name = "updatedName", password = "updatedPassword"))
+        val updatedUser = userDao.get("testId")
+
+        // then
+        verify { userDao.update(user.copy(name = "updatedName", password = "updatedPassword")) }
+        updatedUser.name shouldBe "updatedName"
+        updatedUser.password shouldBe "updatedPassword"
+    }
+
     test("getCount") {
         // given
         every { userDao.getCount() } returns 2

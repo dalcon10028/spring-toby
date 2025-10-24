@@ -37,6 +37,22 @@ class UserDaoJdbc(
         )
     }
 
+    override fun update(user: User) {
+        jdbcTemplate.update(
+            """
+            UPDATE users 
+            SET name = ?, password = ?, level = ?, login = ?, recommend = ? 
+            WHERE id = ?
+            """.trimIndent(),
+            user.name,
+            user.password,
+            user.level.value,
+            user.login,
+            user.recommend,
+            user.id
+        )
+    }
+
     override fun get(id: String): User {
         return jdbcTemplate.queryForObject(
             "SELECT * FROM users WHERE id = ?",
