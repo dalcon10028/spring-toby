@@ -17,6 +17,8 @@ dependencies {
     implementation("org.springframework:spring-context:$springVersion")
     implementation("org.springframework:spring-jdbc:$springVersion")
     implementation("com.h2database:h2:2.3.232")
+    implementation("org.springframework.integration:spring-integration-mail:7.0.0-M3")
+    implementation("javax.mail:mail:1.4")
 
     testImplementation(kotlin("test"))
     testImplementation("org.springframework:spring-test:$springVersion")

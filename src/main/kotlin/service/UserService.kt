@@ -3,7 +3,9 @@ package com.example.service
 import com.example.dao.user.UserDao
 import com.example.model.User
 import com.example.model.UserLevel.*
+import com.example.model.UserLevelUpgradeEvent
 import com.example.util.TransactionUtils.transaction
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 
@@ -11,6 +13,7 @@ import org.springframework.transaction.PlatformTransactionManager
 class UserService(
     private val userDao: UserDao,
     private val tx: PlatformTransactionManager,
+    private val publisher: ApplicationEventPublisher,
 ) {
     fun add(user: User) = userDao.add(user)
 
@@ -27,6 +30,8 @@ class UserService(
             }
             // Upgrade the user's level and update in the database
             .map { user -> user.copy(level = user.level.nextLevel()) }
-            .forEach { user -> userDao.update(user) }
+            .onEach { user -> userDao.update(user) }
+            // Publish an event for each upgraded user
+            .forEach { user -> publisher.publishEvent(UserLevelUpgradeEvent(user)) }
     }
 }

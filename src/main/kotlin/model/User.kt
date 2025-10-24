@@ -1,5 +1,7 @@
 package com.example.model
 
+import org.springframework.context.ApplicationEvent
+
 enum class UserLevel(val value: Int) {
     BASIC(1),
     SILVER(2),
@@ -19,6 +21,10 @@ enum class UserLevel(val value: Int) {
     }
 }
 
+data class UserLevelUpgradeEvent(
+    val user: User
+) : ApplicationEvent(user)
+
 data class User(
     val id: String,
     val name: String,
@@ -26,4 +32,5 @@ data class User(
     val level: UserLevel = UserLevel.BASIC,
     val login: Int = 0,
     val recommend: Int = 0,
+    val email: String = ""
 )

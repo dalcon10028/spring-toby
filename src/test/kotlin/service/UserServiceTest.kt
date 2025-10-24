@@ -9,12 +9,14 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.PlatformTransactionManager
 
 class UserServiceTest : FunSpec({
     val userDao = mockk<UserDao>()
     val transactionManager = mockk<PlatformTransactionManager>(relaxed = true)
-    val userService = UserService(userDao, transactionManager)
+    val publisher = mockk<ApplicationEventPublisher>(relaxed = true)
+    val userService = UserService(userDao, transactionManager, publisher)
 
     beforeEach { clearAllMocks() }
 
