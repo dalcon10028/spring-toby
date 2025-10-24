@@ -5,17 +5,17 @@ enum class UserLevel(val value: Int) {
     SILVER(2),
     GOLD(3);
 
-    fun nextLevel(): UserLevel? {
+    fun nextLevel(): UserLevel {
         return when (this) {
             BASIC -> SILVER
             SILVER -> GOLD
-            GOLD -> null
+            GOLD -> GOLD
         }
     }
 
     companion object {
-        fun from(value: Int): UserLevel = entries.find { it.value == value } ?:
-            throw IllegalArgumentException("Unknown UserLevel value: $value")
+        fun from(value: Int): UserLevel =
+            entries.find { it.value == value } ?: throw IllegalArgumentException("Unknown UserLevel value: $value")
     }
 }
 
