@@ -25,12 +25,15 @@ class UserDaoJdbc(
     override fun add(user: User) {
         jdbcTemplate.update(
             """
-            INSERT INTO users (id, name, password, level) VALUES (?, ?, ?, ?)
-        """.trimIndent(),
+            INSERT INTO users (id, name, password, level, login, recommend)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
             user.id,
             user.name,
             user.password,
-            user.level.value
+            user.level.value,
+            user.login,
+            user.recommend
         )
     }
 
@@ -41,8 +44,10 @@ class UserDaoJdbc(
                 User(
                     id = rs.getString("id"),
                     name = rs.getString("name"),
-                    level = UserLevel.from(rs.getInt("level")),
                     password = rs.getString("password"),
+                    level = UserLevel.from(rs.getInt("level")),
+                    login = rs.getInt("login"),
+                    recommend = rs.getInt("recommend")
                 )
             },
             id
@@ -66,7 +71,9 @@ class UserDaoJdbc(
                     id = rs.getString("id"),
                     name = rs.getString("name"),
                     password = rs.getString("password"),
-                    level = UserLevel.from(rs.getInt("level"))
+                    level = UserLevel.from(rs.getInt("level")),
+                    login = rs.getInt("login"),
+                    recommend = rs.getInt("recommend")
                 )
             }
         )

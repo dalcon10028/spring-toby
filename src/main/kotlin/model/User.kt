@@ -22,6 +22,8 @@ enum class UserLevel(val value: Int) {
 data class User(
     val id: String,
     val name: String,
-    val level: UserLevel = UserLevel.BASIC,
     val password: String,
+    val level: UserLevel = UserLevel.BASIC,
+    val login: Int = 0,
+    val recommend: Int = 0,
 )
