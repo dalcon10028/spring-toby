@@ -1,11 +1,11 @@
 package com.example.dao.user.impl
 
-import com.example.User
+import com.example.model.User
 import com.example.dao.user.UserDao
+import com.example.model.UserLevel
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.ResultSet
-import java.sql.SQLException
 import javax.sql.DataSource
 
 /**
@@ -24,8 +24,13 @@ class UserDaoJdbc(
 
     override fun add(user: User) {
         jdbcTemplate.update(
-            "INSERT INTO users(id, name, password) VALUES(?, ?, ?)",
-            user.id, user.name, user.password
+            """
+            INSERT INTO users (id, name, password, level) VALUES (?, ?, ?, ?)
+        """.trimIndent(),
+            user.id,
+            user.name,
+            user.password,
+            user.level.value
         )
     }
 
@@ -34,9 +39,10 @@ class UserDaoJdbc(
             "SELECT * FROM users WHERE id = ?",
             { rs: ResultSet, _: Int ->
                 User(
-                    rs.getString("id"),
-                    rs.getString("name"),
-                    rs.getString("password")
+                    id = rs.getString("id"),
+                    name = rs.getString("name"),
+                    level = UserLevel.from(rs.getInt("level")),
+                    password = rs.getString("password"),
                 )
             },
             id
@@ -57,9 +63,10 @@ class UserDaoJdbc(
             "SELECT * FROM users ORDER BY id",
             { rs: ResultSet, _: Int ->
                 User(
-                    rs.getString("id"),
-                    rs.getString("name"),
-                    rs.getString("password")
+                    id = rs.getString("id"),
+                    name = rs.getString("name"),
+                    password = rs.getString("password"),
+                    level = UserLevel.from(rs.getInt("level"))
                 )
             }
         )

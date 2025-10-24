@@ -1,6 +1,6 @@
 package dao.user
 
-import com.example.User
+import com.example.model.User
 import com.example.dao.user.UserDao
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -21,7 +21,7 @@ class UserDaoTest : FunSpec({
 
     test("add and get") {
         // given
-        val user = User("testId", "testName", "testPassword")
+        val user = User(id = "testId", name = "testName", password = "testPassword")
         every { userDao.get("testId") } returns user
 
         // when
@@ -35,7 +35,7 @@ class UserDaoTest : FunSpec({
 
     test("add 시 중복 키 예외가 발생해야 한다") {
         // given
-        val user = User("testId", "testName", "testPassword")
+        val user = User(id = "testId", name = "testName", password = "testPassword")
         every { userDao.add(user) } throws DuplicateKeyException("Duplicate Key")
 
         // when & then
@@ -61,8 +61,8 @@ class UserDaoTest : FunSpec({
     test("getAll") {
         // given
         val users = listOf(
-            User("id1", "name1", "pw1"),
-            User("id2", "name2", "pw2")
+            User(id = "id1", name = "name1", password = "pw1"),
+            User(id = "id2", name = "name2", password = "pw2"),
         )
         every { userDao.getAll() } returns users
 

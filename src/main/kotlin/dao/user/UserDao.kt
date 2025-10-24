@@ -1,6 +1,6 @@
 package com.example.dao.user
 
-import com.example.User
+import com.example.model.User
 
 interface UserDao {
     fun add(user: User)

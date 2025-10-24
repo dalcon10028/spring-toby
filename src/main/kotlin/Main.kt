@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.dao.user.impl.UserDaoJdbc
+import com.example.model.User
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
@@ -28,7 +29,11 @@ fun main() {
     prepareDatabase(context)
     val dao = context.getBean("userDao", UserDaoJdbc::class.java)
 
-    val user = User("1", "John Doe", "password123")
+    val user = User(
+        id = "1",
+        name = "John Doe",
+        password = "password123"
+    )
     dao.add(user)
 
     println("User added: $user")
