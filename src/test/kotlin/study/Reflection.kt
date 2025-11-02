@@ -64,11 +64,9 @@ class Reflection : FunSpec({
                 private val target: Hello
             ) : InvocationHandler {
                 override fun invoke(proxy: Any, method: Method, args: Array<out Any>?): Any {
-                    val result = if (args != null) {
-                        method.invoke(target, *args)
-                    } else {
-                        method.invoke(target)
-                    }
+                    val result = args?.let {
+                        method.invoke(target, *it)
+                    } ?: method.invoke(target)
                     return (result as String).uppercase()
                 }
             }
@@ -79,6 +77,32 @@ class Reflection : FunSpec({
                 Hello::class.java.classLoader,
                 arrayOf(Hello::class.java),
                 HelloInvocationHandler(helloInstance)
+            ) as Hello
+            val helloMessage = proxyInstance.sayHello("John")
+            helloMessage shouldBe "HELLO, JOHN"
+            val goodbyeMessage = proxyInstance.sayGoodbye("John")
+            goodbyeMessage shouldBe "GOODBYE, JOHN"
+        }
+
+        // 확장된 다이나믹 프록시 테스트
+        test("Creating implementation via extended dynamic proxy") {
+            class UppercaseHandler(
+                private val target: Any
+            ) : InvocationHandler {
+                override fun invoke(proxy: Any, method: Method, args: Array<out Any>?): Any {
+                    val result = args?.let {
+                        method.invoke(target, *it)
+                    } ?: method.invoke(target)
+                    return if (result is String) result.uppercase() else result
+                }
+            }
+
+            val helloClass = Class.forName($$"study.Reflection$1$2$HelloImpl")
+            val helloInstance = helloClass.getDeclaredConstructor().newInstance() as Hello
+            val proxyInstance = Proxy.newProxyInstance(
+                Hello::class.java.classLoader,
+                arrayOf(Hello::class.java),
+                UppercaseHandler(helloInstance)
             ) as Hello
             val helloMessage = proxyInstance.sayHello("John")
             helloMessage shouldBe "HELLO, JOHN"
