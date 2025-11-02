@@ -13,12 +13,14 @@ dependencies {
     val springVersion = "6.2.10"
     val kotestVersion = "6.0.0"
     val mockkVersion = "1.14.6"
+    val kotlinLoggingVersion = "7.0.3"
 
     implementation("org.springframework:spring-context:$springVersion")
     implementation("org.springframework:spring-jdbc:$springVersion")
     implementation("com.h2database:h2:2.3.232")
     implementation("org.springframework.integration:spring-integration-mail:7.0.0-M3")
     implementation("javax.mail:mail:1.4")
+    implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("org.springframework:spring-test:$springVersion")
