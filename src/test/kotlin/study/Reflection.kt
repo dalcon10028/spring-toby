@@ -2,6 +2,9 @@ package study
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 
 interface Hello {
     fun sayHello(name: String): String
@@ -56,5 +59,31 @@ class Reflection : FunSpec({
             goodbyeMessage shouldBe "GOODBYE, JOHN"
         }
 
+        test("Creating implementation via dynamic proxy") {
+            class HelloInvocationHandler(
+                private val target: Hello
+            ) : InvocationHandler {
+                override fun invoke(proxy: Any, method: Method, args: Array<out Any>?): Any {
+                    val result = if (args != null) {
+                        method.invoke(target, *args)
+                    } else {
+                        method.invoke(target)
+                    }
+                    return (result as String).uppercase()
+                }
+            }
+
+            val helloClass = Class.forName($$"study.Reflection$1$2$HelloImpl")
+            val helloInstance = helloClass.getDeclaredConstructor().newInstance() as Hello
+            val proxyInstance = Proxy.newProxyInstance(
+                Hello::class.java.classLoader,
+                arrayOf(Hello::class.java),
+                HelloInvocationHandler(helloInstance)
+            ) as Hello
+            val helloMessage = proxyInstance.sayHello("John")
+            helloMessage shouldBe "HELLO, JOHN"
+            val goodbyeMessage = proxyInstance.sayGoodbye("John")
+            goodbyeMessage shouldBe "GOODBYE, JOHN"
+        }
     }
 })
