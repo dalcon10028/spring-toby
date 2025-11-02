@@ -1,16 +1,15 @@
-package util
+package study
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.lang.module.ModuleFinder.compose
 
-// Handler 타입 정의
+// study.Handler 타입 정의
 typealias Handler<A, B> = suspend (A) -> B
 
-// Capability 정의
+// study.Capability 정의
 sealed interface Capability
 object Read : Capability
 object Write : Capability
@@ -103,13 +102,13 @@ class DecoratorTest : FunSpec({
     }
 
     context("Access permission control") {
-        test("Capability - Read/Write separation") {
+        test("study.Capability - study.Read/study.Write separation") {
             // 리포지토리 동작을 능력으로 분리
             class Repo<C : Capability>(private val store: MutableMap<Long, Long>) {
                 fun balance(id: Long): Long = store[id] ?: 0L
             }
 
-            // Write Capability를 가진 Repo만 deposit 가능
+            // study.Write Capability를 가진 Repo만 deposit 가능
             fun Repo<Write>.deposit(id: Long, amount: Long) {
                 (this as Repo<*>).let { repo ->
                     val store = repo::class.java.getDeclaredField("store").apply { isAccessible = true }
