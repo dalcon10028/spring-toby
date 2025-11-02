@@ -3,6 +3,9 @@ package study
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.FactoryBean
+import org.springframework.context.annotation.AnnotationConfigApplicationContext
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
 class FactoryBeanTest : FunSpec({
 
@@ -30,9 +33,21 @@ class FactoryBeanTest : FunSpec({
             isSingleton shouldBe false
         }
     }
+
+    // 팩토리빈을 스프링에 등록하고 가져오는 기능 테스트
+    context("FactoryBean Registration Test") {
+        val context = AnnotationConfigApplicationContext(AppConfig::class.java)
+        val message1 = context.getBean("messageFactoryBean") as Message
+        val message2 = context.getBean("messageFactoryBean") as Message
+
+        test("should retrieve bean from Spring context using FactoryBean") {
+            message1 shouldBe Message.create("Hello from Registered FactoryBean")
+            message1 shouldBe message2 // Since isSingleton() returns true
+        }
+    }
 })
 
-private class Message private constructor(
+class Message private constructor(
     private val text: String
 ) {
     override fun equals(other: Any?): Boolean {
@@ -48,6 +63,22 @@ private class Message private constructor(
     companion object {
         fun create(text: String): Message {
             return Message(text)
+        }
+    }
+}
+
+@Configuration
+open class AppConfig {
+    @Bean
+    open fun messageFactoryBean(): FactoryBean<Message> {
+        return object : FactoryBean<Message> {
+            val messageText = "Hello from Registered FactoryBean"
+
+            override fun getObject(): Message = Message.create(messageText)
+
+            override fun getObjectType(): Class<*> = Message::class.java
+
+            override fun isSingleton(): Boolean = true
         }
     }
 }
