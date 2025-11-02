@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.config.DataSourceConfig
 import com.example.dao.user.impl.UserDaoJdbc
 import com.example.model.User
 import org.springframework.context.ApplicationContext
