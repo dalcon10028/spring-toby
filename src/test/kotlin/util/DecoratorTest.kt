@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import java.lang.module.ModuleFinder.compose
 
 // Handler 타입 정의
 typealias Handler<A, B> = suspend (A) -> B
@@ -83,10 +84,16 @@ class DecoratorTest : FunSpec({
             val request = Request("test data")
 
             // Decorator 체인 실행: logging -> auth -> txn -> service
-            val response = withLogging(
-                { req -> withAuth({ r -> withTxn(service, r) }, req) },
-                request
-            )
+            fun <A, B> compose(vararg wraps: (Handler<A, B>) -> Handler<A, B>) =
+                { base: Handler<A, B> -> wraps.foldRight(base) { w, acc -> w(acc) } }
+
+            val decoratedService = compose<Request, Response>(
+                { h -> { a -> withLogging(h, a) } },
+                { h -> { a -> withAuth(h, a) } },
+                { h -> { a -> withTxn(h, a) } }
+            )(service)
+
+            val response = decoratedService(request)
 
             // 검증
             response.result shouldBe "processed: test data"
