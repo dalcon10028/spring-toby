@@ -7,12 +7,12 @@ import io.mockk.coVerify
 import io.mockk.mockk
 
 // study.Handler 타입 정의
-typealias Handler<A, B> = suspend (A) -> B
+private typealias Handler<A, B> = suspend (A) -> B
 
 // study.Capability 정의
-sealed interface Capability
-object Read : Capability
-object Write : Capability
+private sealed interface Capability
+private object Read : Capability
+private object Write : Capability
 
 class DecoratorTest : FunSpec({
     context("lazy loading: thunk & memoization") {

@@ -32,7 +32,7 @@ class FactoryBeanTest : FunSpec({
     }
 })
 
-class Message private constructor(
+private class Message private constructor(
     private val text: String
 ) {
     override fun equals(other: Any?): Boolean {

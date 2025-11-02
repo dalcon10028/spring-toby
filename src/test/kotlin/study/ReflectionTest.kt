@@ -6,12 +6,12 @@ import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
-interface Hello {
+private interface Hello {
     fun sayHello(name: String): String
     fun sayGoodbye(name: String): String
 }
 
-class Reflection : FunSpec({
+class ReflectionTest : FunSpec({
     context("invoke method by reflection") {
         test("Method invocation using reflection") {
             val name = "Kotlin"
