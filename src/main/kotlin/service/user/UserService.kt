@@ -6,9 +6,11 @@ import com.example.model.UserLevel.*
 import com.example.model.UserLevelUpgradeEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
-class UserService(
+@Transactional
+open class UserService(
     private val userDao: UserDao,
     private val publisher: ApplicationEventPublisher,
 ) {
@@ -31,4 +33,7 @@ class UserService(
             // Publish an event for each upgraded user
             .forEach { user -> publisher.publishEvent(UserLevelUpgradeEvent(user)) }
     }
+
+    @Transactional(readOnly = true)
+    open fun getUser(id: String): User? = userDao.get(id)
 }
