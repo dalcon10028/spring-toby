@@ -1,13 +1,14 @@
 package com.example.common.advisor.transaction
 
-import org.springframework.aop.ClassFilter
-import org.springframework.aop.support.NameMatchMethodPointcut
+import org.springframework.aop.aspectj.AspectJExpressionPointcut
 
-class TransactionPointcut : NameMatchMethodPointcut() {
+class TransactionPointcut : AspectJExpressionPointcut() {
     init {
-        setMappedNames("save*", "update*", "delete*", "upgrade*")
-        classFilter = ClassFilter { clazz ->
-            clazz.simpleName.endsWith("Service")
-        }
+        expression = """
+            execution(* *..*Service.upgrade*(..)) ||
+            execution(* *..*Service.save*(..)) ||
+            execution(* *..*Service.update*(..)) ||
+            execution(* *..*Service.delete*(..))
+        """.trimIndent()
     }
 }

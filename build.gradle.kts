@@ -14,11 +14,18 @@ dependencies {
     val kotestVersion = "6.0.0"
     val mockkVersion = "1.14.6"
     val kotlinLoggingVersion = "7.0.3"
+    val aspectjVersion = "1.9.25"
 
+    // Kotlin
     implementation(kotlin("reflect"))
     implementation(kotlin("stdlib"))
+
+    // Spring
     implementation("org.springframework:spring-context:$springVersion")
     implementation("org.springframework:spring-jdbc:$springVersion")
+    implementation("org.springframework:spring-aop:$springVersion")
+    implementation("org.aspectj:aspectjweaver:$aspectjVersion")
+
     implementation("com.h2database:h2:2.3.232")
     implementation("org.springframework.integration:spring-integration-mail:7.0.0-M3")
     implementation("javax.mail:mail:1.4")
