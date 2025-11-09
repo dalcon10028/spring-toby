@@ -2,6 +2,9 @@ package study
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import org.aopalliance.intercept.MethodInterceptor
+import org.aopalliance.intercept.MethodInvocation
+import org.springframework.aop.framework.ProxyFactoryBean
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
@@ -9,6 +12,18 @@ import java.lang.reflect.Proxy
 private interface Hello {
     fun sayHello(name: String): String
     fun sayGoodbye(name: String): String
+}
+
+private class HelloImpl : Hello {
+    override fun sayHello(name: String): String = "Hello, $name"
+    override fun sayGoodbye(name: String): String = "Goodbye, $name"
+}
+
+private class UppercaseAdvice : MethodInterceptor {
+    override fun invoke(invocation: MethodInvocation): Any? {
+        val result = invocation.proceed()
+        return if (result is String) result.uppercase() else result
+    }
 }
 
 class ReflectionTest : FunSpec({
@@ -26,11 +41,6 @@ class ReflectionTest : FunSpec({
     }
 
     context("proxy class") {
-        class HelloImpl : Hello {
-            override fun sayHello(name: String): String = "Hello, $name"
-            override fun sayGoodbye(name: String): String = "Goodbye, $name"
-        }
-
         test("Creating implementation via anonymous class") {
             val helloInstance = HelloImpl()
             val helloMessage = helloInstance.sayHello("John")
@@ -48,7 +58,7 @@ class ReflectionTest : FunSpec({
                 override fun sayGoodbye(name: String): String = target.sayGoodbye(name).uppercase()
             }
 
-            val helloClass = Class.forName($$"study.Reflection$1$2$HelloImpl")
+            val helloClass = Class.forName("study.HelloImpl")
             val helloInstance = helloClass.getDeclaredConstructor().newInstance() as Hello
 
             val proxyInstance = HelloUppercase(helloInstance)
@@ -71,7 +81,7 @@ class ReflectionTest : FunSpec({
                 }
             }
 
-            val helloClass = Class.forName($$"study.Reflection$1$2$HelloImpl")
+            val helloClass = Class.forName("study.HelloImpl")
             val helloInstance = helloClass.getDeclaredConstructor().newInstance() as Hello
             val proxyInstance = Proxy.newProxyInstance(
                 Hello::class.java.classLoader,
@@ -97,7 +107,7 @@ class ReflectionTest : FunSpec({
                 }
             }
 
-            val helloClass = Class.forName($$"study.Reflection$1$2$HelloImpl")
+            val helloClass = Class.forName("study.HelloImpl")
             val helloInstance = helloClass.getDeclaredConstructor().newInstance() as Hello
             val proxyInstance = Proxy.newProxyInstance(
                 Hello::class.java.classLoader,
@@ -109,5 +119,16 @@ class ReflectionTest : FunSpec({
             val goodbyeMessage = proxyInstance.sayGoodbye("John")
             goodbyeMessage shouldBe "GOODBYE, JOHN"
         }
+    }
+
+    test("Using Spring's ProxyFactoryBean to create a proxy with advice") {
+        val proxyFactoryBean = ProxyFactoryBean().also {
+            it.setTarget(HelloImpl())
+            it.addAdvice(UppercaseAdvice())
+        }
+
+        val hello = proxyFactoryBean.getObject() as Hello
+        hello.sayHello("World") shouldBe "HELLO, WORLD"
+        hello.sayGoodbye("World") shouldBe "GOODBYE, WORLD"
     }
 })
