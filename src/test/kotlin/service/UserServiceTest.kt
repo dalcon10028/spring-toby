@@ -3,20 +3,18 @@ package service
 import com.example.dao.user.UserDao
 import com.example.model.User
 import com.example.model.UserLevel
-import com.example.service.UserService
+import com.example.service.user.UserService
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.transaction.PlatformTransactionManager
 
 class UserServiceTest : FunSpec({
     val userDao = mockk<UserDao>()
-    val transactionManager = mockk<PlatformTransactionManager>(relaxed = true)
     val publisher = mockk<ApplicationEventPublisher>(relaxed = true)
-    val userService = UserService(userDao, transactionManager, publisher)
+    val userService = UserService(userDao, publisher)
 
     beforeEach { clearAllMocks() }
 

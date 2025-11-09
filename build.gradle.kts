@@ -15,6 +15,8 @@ dependencies {
     val mockkVersion = "1.14.6"
     val kotlinLoggingVersion = "7.0.3"
 
+    implementation(kotlin("reflect"))
+    implementation(kotlin("stdlib"))
     implementation("org.springframework:spring-context:$springVersion")
     implementation("org.springframework:spring-jdbc:$springVersion")
     implementation("com.h2database:h2:2.3.232")

@@ -1,4 +1,4 @@
-package com.example.config
+package com.example.common.config
 
 import org.h2.Driver
 import org.springframework.context.annotation.Bean

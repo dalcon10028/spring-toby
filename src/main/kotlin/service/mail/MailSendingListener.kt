@@ -1,4 +1,4 @@
-package com.example.service
+package com.example.service.mail
 
 import com.example.model.User
 import com.example.model.UserLevelUpgradeEvent
@@ -7,13 +7,13 @@ import org.springframework.mail.SimpleMailMessage
 import org.springframework.stereotype.Service
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
-import java.util.concurrent.Executors.newFixedThreadPool
+import java.util.concurrent.Executors
 
 @Service
 class MailSendingListener(
     private val mailSender: MailSender
 ) {
-    private val executor = newFixedThreadPool(5)
+    private val executor = Executors.newFixedThreadPool(5)
 
     // 레벨 업그레이드가 실제로 DB에 저장된 후 메일 발송
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

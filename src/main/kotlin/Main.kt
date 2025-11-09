@@ -1,6 +1,7 @@
 package com.example
 
-import com.example.config.DataSourceConfig
+import com.example.common.config.DataSourceConfig
+import com.example.common.config.TransactionConfig
 import com.example.dao.user.impl.UserDaoJdbc
 import com.example.model.User
 import org.springframework.context.ApplicationContext
@@ -29,7 +30,11 @@ fun prepareDatabase(context: ApplicationContext) {
 }
 
 fun main() {
-    val context = AnnotationConfigApplicationContext(DataSourceConfig::class.java, DaoFactory::class.java)
+    val context = AnnotationConfigApplicationContext(
+        DataSourceConfig::class.java,
+        TransactionConfig::class.java,
+        DaoFactory::class.java
+    )
     prepareDatabase(context)
     val dao = context.getBean("userDao", UserDaoJdbc::class.java)
 

@@ -1,4 +1,4 @@
-package com.example.config
+package com.example.common.config
 
 import com.example.common.advisor.transaction.TransactionAdvice
 import com.example.common.advisor.transaction.TransactionAdvisor

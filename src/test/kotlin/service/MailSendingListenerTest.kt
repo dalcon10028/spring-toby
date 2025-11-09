@@ -3,7 +3,7 @@ package service
 import com.example.model.User
 import com.example.model.UserLevel
 import com.example.model.UserLevelUpgradeEvent
-import com.example.service.MailSendingListener
+import com.example.service.mail.MailSendingListener
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.*
 import org.springframework.mail.MailSender

@@ -5,6 +5,8 @@ import io.kotest.matchers.shouldBe
 import org.aopalliance.intercept.MethodInterceptor
 import org.aopalliance.intercept.MethodInvocation
 import org.springframework.aop.framework.ProxyFactoryBean
+import org.springframework.aop.support.DefaultPointcutAdvisor
+import org.springframework.aop.support.NameMatchMethodPointcut
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
@@ -130,5 +132,30 @@ class ReflectionTest : FunSpec({
         val hello = proxyFactoryBean.getObject() as Hello
         hello.sayHello("World") shouldBe "HELLO, WORLD"
         hello.sayGoodbye("World") shouldBe "GOODBYE, WORLD"
+    }
+
+    test("Using ProxyFactoryBean with Pointcut and Advice") {
+        val nameMatchMethodPointcut = object : NameMatchMethodPointcut() {
+            init {
+                setMappedNames("sayH*")
+            }
+        }
+
+        val proxyFactoryBean = ProxyFactoryBean().also {
+            it.setTarget(HelloImpl())
+            it.addAdvisor(
+                /**
+                 * `ProxyFactoryBean` 에는 여러 개의 어드바이스와 포인트컷을 추가할 수 있다.
+                 * Advisor 타입의 오브젝트에 담아서 조합을 만들어 등록한다.
+                 */
+                DefaultPointcutAdvisor(
+                    nameMatchMethodPointcut,
+                    UppercaseAdvice()
+                )
+            )
+        }
+        val hello = proxyFactoryBean.getObject() as Hello
+        hello.sayHello("World") shouldBe "HELLO, WORLD"
+        hello.sayGoodbye("World") shouldBe "Goodbye, World"
     }
 })
