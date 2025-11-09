@@ -3,6 +3,7 @@ package com.example.common.config
 import com.example.common.advisor.transaction.TransactionAdvice
 import com.example.common.advisor.transaction.TransactionAdvisor
 import com.example.common.advisor.transaction.TransactionPointcut
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
@@ -34,5 +35,9 @@ open class TransactionConfig {
     ): TransactionAdvisor {
         return TransactionAdvisor(transactionAdvice, transactionPointcut)
     }
-}
 
+    @Bean
+    open fun advisorAutoProxyCreator(): DefaultAdvisorAutoProxyCreator {
+        return DefaultAdvisorAutoProxyCreator()
+    }
+}
