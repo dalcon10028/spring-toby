@@ -14,25 +14,27 @@ import org.springframework.transaction.support.DefaultTransactionDefinition
 class TransactionAspect(
     private val transactionManager: PlatformTransactionManager
 ) {
-    @Pointcut("""
-        execution(* *..*Service.upgrade*(..)) ||
-        execution(* *..*Service.save*(..)) ||
-        execution(* *..*Service.update*(..)) ||
-        execution(* *..*Service.delete*(..))
-    """)
-    private fun transactionPointcut() {}
+    @Pointcut("within(@org.springframework.stereotype.Service *)")
+    private fun transactionPointcut() {
+    }
 
     @Around("transactionPointcut()")
-    fun aroundTransaction(joinPoint: ProceedingJoinPoint): Any? {
-        val txStatus = transactionManager.getTransaction(
-            DefaultTransactionDefinition()
-        )
+    fun aroundTransaction(proceedingJoinPoint: ProceedingJoinPoint): Any? {
+        val methodName = proceedingJoinPoint.signature.name
+
+        // if the method is a read-only operation, set the transaction as read-only
+        val attributes = DefaultTransactionDefinition().apply {
+            propagationBehavior = DefaultTransactionDefinition.PROPAGATION_REQUIRED
+            isReadOnly = methodName.startsWith("get") || methodName.startsWith("find")
+        }
+
+        val status = transactionManager.getTransaction(attributes)
         return try {
-            val result = joinPoint.proceed()
-            transactionManager.commit(txStatus)
+            val result = proceedingJoinPoint.proceed()
+            transactionManager.commit(status)
             result
-        } catch (ex: Exception) {
-            transactionManager.rollback(txStatus)
+        } catch (ex: Throwable) {
+            transactionManager.rollback(status)
             throw ex
         }
     }

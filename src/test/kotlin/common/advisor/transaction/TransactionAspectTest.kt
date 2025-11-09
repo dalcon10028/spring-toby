@@ -15,11 +15,13 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.stereotype.Service
+import javax.sql.DataSource
 
 class TransactionAspectTest : FunSpec({
 
     context("TransactionAspect pointcut matching") {
-        test("should apply to *Service classes with upgrade* methods") {
+        test("should apply to @Service annotated classes") {
             // given
             val context = AnnotationConfigApplicationContext()
 
@@ -47,35 +49,7 @@ class TransactionAspectTest : FunSpec({
             context.close()
         }
 
-        test("should apply to *Service classes with save* methods") {
-            // given
-            val context = AnnotationConfigApplicationContext()
-
-            @Configuration
-            open class TestConfig {
-                @Bean
-                open fun testService(userDao: UserDao, publisher: ApplicationEventPublisher): TestSaveService {
-                    return TestSaveService(userDao, publisher)
-                }
-            }
-
-            context.register(DataSourceConfig::class.java)
-            context.register(AppConfig::class.java)
-            context.register(DaoFactory::class.java)
-            context.register(TestConfig::class.java)
-            context.scan("com.example.common.advisor.transaction")
-            context.refresh()
-
-            // when
-            val service = context.getBean("testService", TestSaveService::class.java)
-
-            // then
-            AopUtils.isAopProxy(service) shouldBe true
-
-            context.close()
-        }
-
-        test("should NOT apply to classes that don't end with Service") {
+        test("should NOT apply to classes without @Service annotation") {
             // given
             val context = AnnotationConfigApplicationContext()
 
@@ -98,33 +72,6 @@ class TransactionAspectTest : FunSpec({
 
             // then - helper should NOT be proxied
             AopUtils.isAopProxy(helper) shouldBe false
-
-            context.close()
-        }
-
-        test("should NOT apply to non-matching methods") {
-            // given
-            val context = AnnotationConfigApplicationContext()
-
-            @Configuration
-            open class TestConfig {
-                @Bean
-                open fun testService(): TestNonMatchingService {
-                    return TestNonMatchingService()
-                }
-            }
-
-            context.register(DataSourceConfig::class.java)
-            context.register(AppConfig::class.java)
-            context.register(TestConfig::class.java)
-            context.scan("com.example.common.advisor.transaction")
-            context.refresh()
-
-            // when
-            val service = context.getBean("testService", TestNonMatchingService::class.java)
-
-            // then - should NOT be proxied because no methods match the pointcut
-            AopUtils.isAopProxy(service) shouldBe false
 
             context.close()
         }
@@ -216,7 +163,7 @@ class TransactionAspectTest : FunSpec({
             context.refresh()
 
             // Drop and recreate table
-            val dataSource = context.getBean(javax.sql.DataSource::class.java)
+            val dataSource = context.getBean(DataSource::class.java)
             dataSource.connection.use { conn ->
                 conn.createStatement().execute("DROP TABLE IF EXISTS users")
                 conn.createStatement().execute(
@@ -255,6 +202,62 @@ class TransactionAspectTest : FunSpec({
 
             context.close()
         }
+
+        test("should use read-only transaction for get methods") {
+            // given
+            val context = AnnotationConfigApplicationContext()
+
+            @Configuration
+            open class ReadOnlyServiceConfig {
+                @Bean
+                open fun readOnlyService(userDao: UserDao, publisher: ApplicationEventPublisher): ReadOnlyTestService {
+                    return ReadOnlyTestService(userDao, publisher)
+                }
+            }
+
+            context.register(DataSourceConfig::class.java)
+            context.register(AppConfig::class.java)
+            context.register(DaoFactory::class.java)
+            context.register(ReadOnlyServiceConfig::class.java)
+            context.scan("com.example.common.advisor.transaction")
+            context.refresh()
+
+            // Drop and recreate table to ensure clean state
+            val dataSource = context.getBean(DataSource::class.java)
+            dataSource.connection.use { conn ->
+                conn.createStatement().execute("DROP TABLE IF EXISTS users")
+                conn.createStatement().execute(
+                    """
+                    CREATE TABLE users (
+                        id VARCHAR(50) PRIMARY KEY,
+                        name VARCHAR(100),
+                        password VARCHAR(100),
+                        level INT,
+                        login INT,
+                        recommend INT
+                    )
+                    """.trimIndent()
+                )
+            }
+
+            val userDao = context.getBean(UserDao::class.java)
+            val service = context.getBean("readOnlyService", ReadOnlyTestService::class.java)
+
+            // Insert test data
+            userDao.add(User("read1", "User 1", "pass", UserLevel.BASIC, 10, 5))
+
+            // Verify service is proxied
+            AopUtils.isAopProxy(service) shouldBe true
+
+            // when - call read-only method
+            val users = service.getAllUsers()
+
+            // then - should return users (read-only transaction)
+            users.size shouldBe 1
+            users[0].id shouldBe "read1"
+
+            context.close()
+        }
     }
 })
 
@@ -263,38 +266,24 @@ class UpdateCounter {
     var count = 0
 }
 
-// Test service classes - must be open for proxy
+// Test service classes - must be open for proxy and annotated with @Service
+@Service
 open class TestUpgradeService(
     private val userDao: UserDao,
     private val publisher: ApplicationEventPublisher
 ) {
     open fun upgradeUsers() {
-        // Method that should be transactional (upgrade* pattern)
-    }
-}
-
-open class TestSaveService(
-    private val userDao: UserDao,
-    private val publisher: ApplicationEventPublisher
-) {
-    open fun saveUser(user: User) {
-        // Method that should be transactional (save* pattern)
+        // Method that should be transactional
     }
 }
 
 open class TestHelper {
     fun processData() {
-        // This should NOT be transactional (doesn't end with 'Service')
+        // This should NOT be transactional (no @Service annotation)
     }
 }
 
-open class TestNonMatchingService {
-    open fun getData(): String {
-        // This should NOT be transactional (doesn't match any pattern)
-        return "data"
-    }
-}
-
+@Service
 open class FailingUpgradeService(
     private val userDao: UserDao,
     private val publisher: ApplicationEventPublisher,
@@ -321,11 +310,26 @@ open class FailingUpgradeService(
     }
 }
 
+@Service
 open class SuccessSaveService(
     private val userDao: UserDao,
     private val publisher: ApplicationEventPublisher
 ) {
     open fun saveUsers(users: List<User>) {
         users.forEach { userDao.add(it) }
+    }
+}
+
+@Service
+open class ReadOnlyTestService(
+    private val userDao: UserDao,
+    private val publisher: ApplicationEventPublisher
+) {
+    open fun getAllUsers(): List<User> {
+        return userDao.getAll()
+    }
+
+    open fun findUserById(id: String): User {
+        return userDao.get(id)
     }
 }
