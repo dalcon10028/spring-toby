@@ -1,7 +1,7 @@
 package com.example
 
+import com.example.common.config.AppConfig
 import com.example.common.config.DataSourceConfig
-import com.example.common.config.TransactionConfig
 import com.example.dao.user.impl.UserDaoJdbc
 import com.example.model.User
 import org.springframework.context.ApplicationContext
@@ -32,7 +32,7 @@ fun prepareDatabase(context: ApplicationContext) {
 fun main() {
     val context = AnnotationConfigApplicationContext(
         DataSourceConfig::class.java,
-        TransactionConfig::class.java,
+        AppConfig::class.java,
         DaoFactory::class.java
     )
     prepareDatabase(context)
