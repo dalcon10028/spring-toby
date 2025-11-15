@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional
-open class UserService(
+class UserService(
     private val userDao: UserDao,
     private val publisher: ApplicationEventPublisher,
 ) {
@@ -35,5 +35,5 @@ open class UserService(
     }
 
     @Transactional(readOnly = true)
-    open fun getUser(id: String): User? = userDao.get(id)
+    fun getUser(id: String): User? = userDao.get(id)
 }
